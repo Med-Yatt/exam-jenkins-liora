@@ -43,7 +43,7 @@ pipeline {
                 script {
 		    //sh 'helm upgrade --install projet ./charts --namespace qa --set image.tag=$BUILD_ID'
                     sh '''
-                        helm upgrade --install app ./charts --namespace dev \
+                        helm upgrade --install app-dev ./charts --namespace dev \
                           --set movie.image.tag=${DOCKER_TAG} \
                           --set cast.image.tag=${DOCKER_TAG} \
 			  --set service.nodePort=30001 \
@@ -59,7 +59,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        helm upgrade --install app ./charts --namespace qa \
+                        helm upgrade --install app-qa ./charts --namespace qa \
                           --set movie.image.tag=${DOCKER_TAG} \
                           --set cast.image.tag=${DOCKER_TAG} \
 			  --set service.nodePort=30002 \
@@ -75,7 +75,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        helm upgrade --install app ./charts --namespace staging \
+                        helm upgrade --install app-staging ./charts --namespace staging \
                           --set movie.image.tag=${DOCKER_TAG} \
                           --set cast.image.tag=${DOCKER_TAG} \
 			  --set service.nodePort=30003 \
@@ -94,7 +94,7 @@ pipeline {
                 }
                 script {
                     sh '''
-                        helm upgrade --install app ./charts --namespace prod \
+                        helm upgrade --install app-prod ./charts --namespace prod \
                           --set movie.image.tag=${DOCKER_TAG} \
                           --set cast.image.tag=${DOCKER_TAG} \
 			  --set service.nodePort=30004 \
