@@ -89,6 +89,9 @@ pipeline {
             environment {
                 KUBECONFIG = credentials("config-k3s")
             }
+            when {
+		branch 'master'
+            }
             steps {
                 timeout(time: 15, unit: "MINUTES") {
 		    input message: "Déployer en production ?", ok: "Oui"
