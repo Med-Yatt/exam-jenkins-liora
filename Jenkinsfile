@@ -165,9 +165,9 @@ pipeline {
     }
 
     post { 
-        success {
-            echo "Pipeline terminé avec succès"
-        }
+        //success {
+          //  echo "Pipeline terminé avec succès"
+        //}
         failure {
             echo "Envoie de mail en cas d'echec"
             mail to: "amadouyatt@live.fr",
