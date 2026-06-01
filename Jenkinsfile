@@ -37,6 +37,9 @@ pipeline {
         }
 
 	stage('Déploiement des bases de données') {
+            environment {
+                KUBECONFIG = credentials("config-k3s")
+            }
             parallel {
                 stage('Déploiement Movie DB') {
                     steps {
@@ -66,6 +69,9 @@ pipeline {
         }
 
 	stage('Test Databases') {
+            environment {
+                KUBECONFIG = credentials("config-k3s")
+            }
             steps {
                 script {
                     // Vérification de la connexion à movie_db
