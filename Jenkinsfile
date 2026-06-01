@@ -72,26 +72,25 @@ pipeline {
             environment {
                 KUBECONFIG = credentials("config-k3s")
             }
-            steps {
+	    steps {
                 script {
                     // Vérification de la connexion à movie_db
                     sh '''
-                        PGPASSWORD=movie_db_password psql -h movie-db-dev-postgresql -U movie_db_username -d movie_db_dev -c "SELECT 1;"
-                        PGPASSWORD=movie_db_password psql -h movie-db-qa-postgresql -U movie_db_username -d movie_db_qa -c "SELECT 1;"
-                        PGPASSWORD=movie_db_password psql -h movie-db-staging-postgresql -U movie_db_username -d movie_db_staging -c "SELECT 1;"
-                        PGPASSWORD=movie_db_password psql -h movie-db-prod-postgresql -U movie_db_username -d movie_db_prod -c "SELECT 1;"
+                        kubectl run movie-db-postgresql-client --rm --tty -i --restart=Never --namespace dev --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=movie_db_password" --command -- psql --host movie-db-dev-postgresql -U movie_db_username -d movie_db_dev -p 5432 -c "SELECT 1;"
+                        kubectl run movie-db-postgresql-client --rm --tty -i --restart=Never --namespace qa --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=movie_db_password" --command -- psql --host movie-db-qa-postgresql -U movie_db_username -d movie_db_qa -p 5432 -c "SELECT 1;"
+                        kubectl run movie-db-postgresql-client --rm --tty -i --restart=Never --namespace staging --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=movie_db_password" --command -- psql --host movie-db-staging-postgresql -U movie_db_username -d movie_db_staging -p 5432 -c "SELECT 1;"
+                        kubectl run movie-db-postgresql-client --rm --tty -i --restart=Never --namespace prod --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=movie_db_password" --command -- psql --host movie-db-prod-postgresql -U movie_db_username -d movie_db_prod -p 5432 -c "SELECT 1;"
                     '''
 
                     // Vérification de la connexion à cast_db
                     sh '''
-                        PGPASSWORD=cast_db_password psql -h cast-db-dev-postgresql -U cast_db_username -d cast_db_dev -c "SELECT 1;"
-                        PGPASSWORD=cast_db_password psql -h cast-db-qa-postgresql -U cast_db_username -d cast_db_qa -c "SELECT 1;"
-                        PGPASSWORD=cast_db_password psql -h cast-db-staging-postgresql -U cast_db_username -d cast_db_staging -c "SELECT 1;"
-                        PGPASSWORD=cast_db_password psql -h cast-db-prod-postgresql -U cast_db_username -d cast_db_prod -c "SELECT 1;"
+                        kubectl run cast-db-postgresql-client --rm --tty -i --restart=Never --namespace dev --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=cast_db_password" --command -- psql --host cast-db-dev-postgresql -U cast_db_username -d cast_db_dev -p 5432 -c "SELECT 1;"
+                        kubectl run cast-db-postgresql-client --rm --tty -i --restart=Never --namespace qa --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=cast_db_password" --command -- psql --host cast-db-qa-postgresql -U cast_db_username -d cast_db_qa -p 5432 -c "SELECT 1;"
+                        kubectl run cast-db-postgresql-client --rm --tty -i --restart=Never --namespace staging --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=cast_db_password" --command -- psql --host cast-db-staging-postgresql -U cast_db_username -d cast_db_staging -p 5432 -c "SELECT 1;"
+                        kubectl run cast-db-postgresql-client --rm --tty -i --restart=Never --namespace prod --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=cast_db_password" --command -- psql --host cast-db-prod-postgresql -U cast_db_username -d cast_db_prod -p 5432 -c "SELECT 1;"
                     '''
                 }
             }
-        }
 
         stage('Deploiement sur dev') {
             environment {
