@@ -41,20 +41,24 @@ pipeline {
                 stage('Déploiement Movie DB') {
                     steps {
                         script {
+			  sh '''
                             helm upgrade --install movie-db-dev oci://registry-1.docker.io/bitnamicharts/postgresql --namespace dev --create-namespace --set auth.username=movie_db_username --set auth.password=movie_db_password --set auth.database=movie_db_dev
                             helm upgrade --install movie-db-qa oci://registry-1.docker.io/bitnamicharts/postgresql --namespace qa --create-namespace --set auth.username=movie_db_username --set auth.password=movie_db_password --set auth.database=movie_db_qa
                             helm upgrade --install movie-db-staging oci://registry-1.docker.io/bitnamicharts/postgresql --namespace staging --create-namespace --set auth.username=movie_db_username --set auth.password=movie_db_password --set auth.database=movie_db_staging
                             helm upgrade --install movie-db-prod oci://registry-1.docker.io/bitnamicharts/postgresql --namespace prod --create-namespace --set auth.username=movie_db_username --set auth.password=movie_db_password --set auth.database=movie_db_prod
+			'''
                         }
                     }
                 }
                 stage('Déploiement Cast DB') {
                     steps {
                         script {
+			  sh '''
                             helm upgrade --install cast-db-dev oci://registry-1.docker.io/bitnamicharts/postgresql --namespace dev --create-namespace --set auth.username=cast_db_username --set auth.password=cast_db_password --set auth.database=cast_db_dev
                             helm upgrade --install cast-db-qa oci://registry-1.docker.io/bitnamicharts/postgresql --namespace qa --create-namespace --set auth.username=cast_db_username --set auth.password=cast_db_password --set auth.database=cast_db_qa
                             helm upgrade --install cast-db-staging oci://registry-1.docker.io/bitnamicharts/postgresql --namespace staging --create-namespace --set auth.username=cast_db_username --set auth.password=cast_db_password --set auth.database=cast_db_staging
                             helm upgrade --install cast-db-prod oci://registry-1.docker.io/bitnamicharts/postgresql --namespace prod --create-namespace --set auth.username=cast_db_username --set auth.password=cast_db_password --set auth.database=cast_db_prod
+			'''
                         }
                     }
                 }
