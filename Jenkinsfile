@@ -91,6 +91,7 @@ pipeline {
                     '''
                 }
             }
+	}
 
         stage('Deploiement sur dev') {
             environment {
