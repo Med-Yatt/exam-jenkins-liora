@@ -90,7 +90,7 @@ pipeline {
                 KUBECONFIG = credentials("config-k3s")
             }
             when {
-		branch 'master'
+		branch 'origin/master'
             }
             steps {
                 timeout(time: 15, unit: "MINUTES") {
