@@ -36,7 +36,7 @@ pipeline {
             }
         }
 
-	stage('Déploiement des bases de données') {
+	stage('Déploiement des DB') {
             environment {
                 KUBECONFIG = credentials("config-k3s")
             }
@@ -45,10 +45,26 @@ pipeline {
                     steps {
                         script {
 			  sh '''
-                            helm upgrade --install movie-db-dev oci://registry-1.docker.io/bitnamicharts/postgresql --namespace dev --create-namespace --set auth.username=movie_db_username --set auth.password=movie_db_password --set auth.database=movie_db_dev
-                            helm upgrade --install movie-db-qa oci://registry-1.docker.io/bitnamicharts/postgresql --namespace qa --create-namespace --set auth.username=movie_db_username --set auth.password=movie_db_password --set auth.database=movie_db_qa
-                            helm upgrade --install movie-db-staging oci://registry-1.docker.io/bitnamicharts/postgresql --namespace staging --create-namespace --set auth.username=movie_db_username --set auth.password=movie_db_password --set auth.database=movie_db_staging
-                            helm upgrade --install movie-db-prod oci://registry-1.docker.io/bitnamicharts/postgresql --namespace prod --create-namespace --set auth.username=movie_db_username --set auth.password=movie_db_password --set auth.database=movie_db_prod
+                            helm upgrade --install movie-db-dev oci://registry-1.docker.io/bitnamicharts/postgresql \
+				--namespace dev --create-namespace \
+				--set auth.username=movie_db_username \
+				--set auth.password=movie_db_password \
+				--set auth.database=movie_db_dev
+                            helm upgrade --install movie-db-qa oci://registry-1.docker.io/bitnamicharts/postgresql \
+				--namespace qa --create-namespace \
+				--set auth.username=movie_db_username \
+				--set auth.password=movie_db_password \
+				--set auth.database=movie_db_qa
+                            helm upgrade --install movie-db-staging oci://registry-1.docker.io/bitnamicharts/postgresql \
+				--namespace staging --create-namespace \
+				--set auth.username=movie_db_username \
+				--set auth.password=movie_db_password \
+				--set auth.database=movie_db_staging
+                            helm upgrade --install movie-db-prod oci://registry-1.docker.io/bitnamicharts/postgresql \
+				--namespace prod --create-namespace \
+				--set auth.username=movie_db_username \
+				--set auth.password=movie_db_password \
+				--set auth.database=movie_db_prod
 			'''
                         }
                     }
@@ -57,41 +73,33 @@ pipeline {
                     steps {
                         script {
 			  sh '''
-                            helm upgrade --install cast-db-dev oci://registry-1.docker.io/bitnamicharts/postgresql --namespace dev --create-namespace --set auth.username=cast_db_username --set auth.password=cast_db_password --set auth.database=cast_db_dev
-                            helm upgrade --install cast-db-qa oci://registry-1.docker.io/bitnamicharts/postgresql --namespace qa --create-namespace --set auth.username=cast_db_username --set auth.password=cast_db_password --set auth.database=cast_db_qa
-                            helm upgrade --install cast-db-staging oci://registry-1.docker.io/bitnamicharts/postgresql --namespace staging --create-namespace --set auth.username=cast_db_username --set auth.password=cast_db_password --set auth.database=cast_db_staging
-                            helm upgrade --install cast-db-prod oci://registry-1.docker.io/bitnamicharts/postgresql --namespace prod --create-namespace --set auth.username=cast_db_username --set auth.password=cast_db_password --set auth.database=cast_db_prod
+                            helm upgrade --install cast-db-dev oci://registry-1.docker.io/bitnamicharts/postgresql \
+                            	--namespace dev --create-namespace \
+				--set auth.username=cast_db_username \
+				--set auth.password=cast_db_password \
+				--set auth.database=cast_db_dev
+                            helm upgrade --install cast-db-qa oci://registry-1.docker.io/bitnamicharts/postgresql \
+				--namespace qa --create-namespace \
+				--set auth.username=cast_db_username \
+				--set auth.password=cast_db_password \
+				--set auth.database=cast_db_qa
+                            helm upgrade --install cast-db-staging oci://registry-1.docker.io/bitnamicharts/postgresql \
+				--namespace staging \
+				--create-namespace \
+				--set auth.username=cast_db_username \
+				--set auth.password=cast_db_password \
+				--set auth.database=cast_db_staging
+                            helm upgrade --install cast-db-prod oci://registry-1.docker.io/bitnamicharts/postgresql \
+				--namespace prod --create-namespace \
+				--set auth.username=cast_db_username \
+				--set auth.password=cast_db_password \
+				--set auth.database=cast_db_prod
 			'''
                         }
                     }
                 }
             }
         }
-
-	stage('Test Databases') {
-            environment {
-                KUBECONFIG = credentials("config-k3s")
-            }
-	    steps {
-                script {
-                    // Vérification de la connexion à movie_db
-                    sh '''
-                        kubectl run movie-db-postgresql-client --rm --tty -i --restart=Never --namespace dev --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=movie_db_password" --command -- psql --host movie-db-dev-postgresql -U movie_db_username -d movie_db_dev -p 5432 -c "SELECT 1;"
-                        kubectl run movie-db-postgresql-client --rm --tty -i --restart=Never --namespace qa --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=movie_db_password" --command -- psql --host movie-db-qa-postgresql -U movie_db_username -d movie_db_qa -p 5432 -c "SELECT 1;"
-                        kubectl run movie-db-postgresql-client --rm --tty -i --restart=Never --namespace staging --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=movie_db_password" --command -- psql --host movie-db-staging-postgresql -U movie_db_username -d movie_db_staging -p 5432 -c "SELECT 1;"
-                        kubectl run movie-db-postgresql-client --rm --tty -i --restart=Never --namespace prod --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=movie_db_password" --command -- psql --host movie-db-prod-postgresql -U movie_db_username -d movie_db_prod -p 5432 -c "SELECT 1;"
-                    '''
-
-                    // Vérification de la connexion à cast_db
-                    sh '''
-                        kubectl run cast-db-postgresql-client --rm --tty -i --restart=Never --namespace dev --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=cast_db_password" --command -- psql --host cast-db-dev-postgresql -U cast_db_username -d cast_db_dev -p 5432 -c "SELECT 1;"
-                        kubectl run cast-db-postgresql-client --rm --tty -i --restart=Never --namespace qa --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=cast_db_password" --command -- psql --host cast-db-qa-postgresql -U cast_db_username -d cast_db_qa -p 5432 -c "SELECT 1;"
-                        kubectl run cast-db-postgresql-client --rm --tty -i --restart=Never --namespace staging --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=cast_db_password" --command -- psql --host cast-db-staging-postgresql -U cast_db_username -d cast_db_staging -p 5432 -c "SELECT 1;"
-                        kubectl run cast-db-postgresql-client --rm --tty -i --restart=Never --namespace prod --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=cast_db_password" --command -- psql --host cast-db-prod-postgresql -U cast_db_username -d cast_db_prod -p 5432 -c "SELECT 1;"
-                    '''
-                }
-            }
-	}
 
         stage('Deploiement sur dev') {
             environment {
@@ -101,10 +109,13 @@ pipeline {
                 script {
 		    //sh 'helm upgrade --install projet ./charts --namespace qa --set image.tag=$BUILD_ID'
                     sh '''
-                        helm upgrade --install app-dev ./charts --namespace dev --create-namespace \
+                        helm upgrade --install movie ./charts --namespace dev --create-namespace \
                           --set movie.image.tag=${DOCKER_TAG} \
-                          --set cast.image.tag=${DOCKER_TAG} \
 			  --set service.nodePort=30001 \
+                        helm upgrade --install cast ./charts --namespace dev --create-namespace \
+                          --set cast.image.tag=${DOCKER_TAG} \
+			  --set service.nodePort=30002 \
+			helm install nginx bitnami/nginx --namespace dev --create-namespace 
                     '''
                 }
             }
