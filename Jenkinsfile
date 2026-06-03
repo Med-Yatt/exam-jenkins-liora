@@ -111,10 +111,10 @@ pipeline {
                     sh '''
                         helm upgrade --install movie ./charts --namespace dev --create-namespace \
                           --set movie.image.tag=${DOCKER_TAG} \
-			  --set service.nodePort=30001 \
+			  --set service.nodePort=30001 
                         helm upgrade --install cast ./charts --namespace dev --create-namespace \
                           --set cast.image.tag=${DOCKER_TAG} \
-			  --set service.nodePort=30002 \
+			  --set service.nodePort=30002 
 			helm install nginx bitnami/nginx --namespace dev --create-namespace 
                     '''
                 }
@@ -131,7 +131,7 @@ pipeline {
                         helm upgrade --install app-qa ./charts --namespace qa --create-namespace \
                           --set movie.image.tag=${DOCKER_TAG} \
                           --set cast.image.tag=${DOCKER_TAG} \
-			  --set service.nodePort=30002 \
+			  --set service.nodePort=30002 
                     '''
                 }
             }
@@ -147,7 +147,7 @@ pipeline {
                         helm upgrade --install app-staging ./charts --namespace staging --create-namespace \
                           --set movie.image.tag=${DOCKER_TAG} \
                           --set cast.image.tag=${DOCKER_TAG} \
-			  --set service.nodePort=30003 \
+			  --set service.nodePort=30003 
                     '''
                 }
             }
@@ -169,7 +169,7 @@ pipeline {
                         helm upgrade --install app-prod ./charts --namespace prod --create-namespace \
                           --set movie.image.tag=${DOCKER_TAG} \
                           --set cast.image.tag=${DOCKER_TAG} \
-			  --set service.nodePort=30004 \
+			  --set service.nodePort=30004 
                     '''
                 }
             }
