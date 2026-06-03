@@ -179,7 +179,7 @@ pipeline {
         //success {
           //  echo "Pipeline terminé avec succès"
         //}
-        failure {
+        //failure {
             echo "Envoie de mail en cas d'echec"
             mail to: "amadouyatt@live.fr",
                 subject: "${env.JOB_NAME} - Build # ${env.BUILD_ID} en echec",
