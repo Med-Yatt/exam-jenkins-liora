@@ -130,7 +130,7 @@ pipeline {
                         helm upgrade --install app-qa ./charts --namespace qa --create-namespace \
                           --set movie.image.tag=${DOCKER_TAG} \
                           --set cast.image.tag=${DOCKER_TAG} \
-			  --set service.nodePort=30002 
+			  --set service.nodePort=30003 
                     '''
                 }
             }
@@ -146,7 +146,7 @@ pipeline {
                         helm upgrade --install app-staging ./charts --namespace staging --create-namespace \
                           --set movie.image.tag=${DOCKER_TAG} \
                           --set cast.image.tag=${DOCKER_TAG} \
-			  --set service.nodePort=30003 
+			  --set service.nodePort=30004 
                     '''
                 }
             }
