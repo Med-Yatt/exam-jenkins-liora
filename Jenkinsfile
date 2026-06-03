@@ -115,7 +115,6 @@ pipeline {
                         helm upgrade --install cast ./charts --namespace dev --create-namespace \
                           --set cast.image.tag=${DOCKER_TAG} \
 			  --set service.nodePort=30002 
-			helm install nginx bitnami/nginx --namespace dev --create-namespace 
                     '''
                 }
             }
