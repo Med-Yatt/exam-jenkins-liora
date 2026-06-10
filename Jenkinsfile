@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-	BUILD_ID = "1"
+        BUILD_ID = "1"
         DOCKER_ID = "medyatt"
         DOCKER_TAG = "v.${BUILD_ID}.0"
         IMAGE_MOVIE = "${DOCKER_ID}/movie:${DOCKER_TAG}"
@@ -10,7 +10,7 @@ pipeline {
     }
 
     stages {
-        stage('Docker Build') {
+	stage('Docker Build') {
             steps {
                 script {
                     sh '''
@@ -21,14 +21,14 @@ pipeline {
             }
         }
 
-        stage('Docker Push') {
+	stage('Docker Push') {
             environment {
                 DOCKER_PWD = credentials("DOCKER_HUB_PWD")
             }
             steps {
                 script {
                     sh '''
-			echo "${DOCKER_PWD}" | docker login -u "${DOCKER_ID}" --password-stdin
+                        echo "${DOCKER_PWD}" | docker login -u "${DOCKER_ID}" --password-stdin
                         docker push ${IMAGE_MOVIE}
                         docker push ${IMAGE_CAST}
                     '''
@@ -36,91 +36,24 @@ pipeline {
             }
         }
 
-	stage('Déploiement des DB') {
-            environment {
-                KUBECONFIG = credentials("config-k3s")
-            }
-            parallel {
-                stage('Déploiement Movie DB') {
-                    steps {
-                        script {
-			  sh '''
-                            helm upgrade --install movie-db-dev oci://registry-1.docker.io/bitnamicharts/postgresql \
-				--namespace dev --create-namespace \
-				--set auth.username=movie_db_username \
-				--set auth.password=movie_db_password \
-				--set auth.database=movie_db_dev
-                            helm upgrade --install movie-db-qa oci://registry-1.docker.io/bitnamicharts/postgresql \
-				--namespace qa --create-namespace \
-				--set auth.username=movie_db_username \
-				--set auth.password=movie_db_password \
-				--set auth.database=movie_db_qa
-                            helm upgrade --install movie-db-staging oci://registry-1.docker.io/bitnamicharts/postgresql \
-				--namespace staging --create-namespace \
-				--set auth.username=movie_db_username \
-				--set auth.password=movie_db_password \
-				--set auth.database=movie_db_staging
-                            helm upgrade --install movie-db-prod oci://registry-1.docker.io/bitnamicharts/postgresql \
-				--namespace prod --create-namespace \
-				--set auth.username=movie_db_username \
-				--set auth.password=movie_db_password \
-				--set auth.database=movie_db_prod
-			'''
-                        }
-                    }
-                }
-                stage('Déploiement Cast DB') {
-                    steps {
-                        script {
-			  sh '''
-                            helm upgrade --install cast-db-dev oci://registry-1.docker.io/bitnamicharts/postgresql \
-                            	--namespace dev --create-namespace \
-				--set auth.username=cast_db_username \
-				--set auth.password=cast_db_password \
-				--set auth.database=cast_db_dev
-                            helm upgrade --install cast-db-qa oci://registry-1.docker.io/bitnamicharts/postgresql \
-				--namespace qa --create-namespace \
-				--set auth.username=cast_db_username \
-				--set auth.password=cast_db_password \
-				--set auth.database=cast_db_qa
-                            helm upgrade --install cast-db-staging oci://registry-1.docker.io/bitnamicharts/postgresql \
-				--namespace staging \
-				--create-namespace \
-				--set auth.username=cast_db_username \
-				--set auth.password=cast_db_password \
-				--set auth.database=cast_db_staging
-                            helm upgrade --install cast-db-prod oci://registry-1.docker.io/bitnamicharts/postgresql \
-				--namespace prod --create-namespace \
-				--set auth.username=cast_db_username \
-				--set auth.password=cast_db_password \
-				--set auth.database=cast_db_prod
-			'''
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Deploiement sur dev') {
+	stage('Deploiement sur dev') {
             environment {
                 KUBECONFIG = credentials("config-k3s")
             }
             steps {
                 script {
-		    //sh 'helm upgrade --install projet ./charts --namespace qa --set image.tag=$BUILD_ID'
+                    //sh 'helm upgrade --install projet ./charts --namespace qa --set image.tag=$BUILD_ID'
                     sh '''
-                        helm upgrade --install movie ./charts --namespace dev --create-namespace \
+                        helm upgrade --install app-dev ./charts --namespace dev --create-namespace \
                           --set movie.image.tag=${DOCKER_TAG} \
-			  --set service.nodePort=30001 
-                        helm upgrade --install cast ./charts --namespace dev --create-namespace \
                           --set cast.image.tag=${DOCKER_TAG} \
-			  --set service.nodePort=30002 
+                          --set service.nodePort=30001 \
                     '''
                 }
             }
         }
 
-        stage('Deploiement sur QA') {
+	stage('Deploiement sur QA') {
             environment {
                 KUBECONFIG = credentials("config-k3s")
             }
@@ -130,13 +63,13 @@ pipeline {
                         helm upgrade --install app-qa ./charts --namespace qa --create-namespace \
                           --set movie.image.tag=${DOCKER_TAG} \
                           --set cast.image.tag=${DOCKER_TAG} \
-			  --set service.nodePort=30003 
+                          --set service.nodePort=30002 \
                     '''
                 }
             }
         }
 
-        stage('Deploiement sur staging') {
+	stage('Deploiement sur staging') {
             environment {
                 KUBECONFIG = credentials("config-k3s")
             }
@@ -146,44 +79,44 @@ pipeline {
                         helm upgrade --install app-staging ./charts --namespace staging --create-namespace \
                           --set movie.image.tag=${DOCKER_TAG} \
                           --set cast.image.tag=${DOCKER_TAG} \
-			  --set service.nodePort=30004 
+                          --set service.nodePort=30003 \
                     '''
                 }
             }
         }
 
-        stage('Deploiement sur prod') {
+	stage('Deploiement sur prod') {
             environment {
                 KUBECONFIG = credentials("config-k3s")
             }
-            when {
-		branch 'master'
-            }
+           // when {
+           //     branch 'master'
+           // }
             steps {
                 timeout(time: 15, unit: "MINUTES") {
-		    input message: "Déployer en production ?", ok: "Oui"
+                    input message: "Déployer en production ?", ok: "Oui"
                 }
                 script {
                     sh '''
                         helm upgrade --install app-prod ./charts --namespace prod --create-namespace \
                           --set movie.image.tag=${DOCKER_TAG} \
                           --set cast.image.tag=${DOCKER_TAG} \
-			  --set service.nodePort=30004 
+                          --set service.nodePort=30004 \
                     '''
                 }
             }
         }
     }
 
-   // post { 
-        //success {
-          //  echo "Pipeline terminé avec succès"
-        //}
-        //failure {
-         //   echo "Envoie de mail en cas d'echec"
-         //   mail to: "amadouyatt@live.fr",
-         //       subject: "${env.JOB_NAME} - Build # ${env.BUILD_ID} en echec",
-         //       body: "Pour plus d'infos sur l'echec du pipeline, Merci de verifier la sortie console a ${env.BUILD_URL}"
-       // }
-    //}
+    post {
+	success {
+            echo "Pipeline terminé avec succès"
+        }
+	failure {
+            echo "Envoie de mail en cas d'echec"
+            mail to: "amadouyatt@live.fr",
+                subject: "${env.JOB_NAME} - Build # ${env.BUILD_ID} en echec",
+                body: "Pour plus d'infos sur l'echec du pipeline, Merci de verifier la sortie console a ${env.BUILD_URL}"
+        }
+    }
 }
