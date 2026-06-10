@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        BUILD_ID = "1"
         DOCKER_ID = "medyatt"
         DOCKER_TAG = "v.${BUILD_ID}.0"
         IMAGE_MOVIE = "${DOCKER_ID}/movie:${DOCKER_TAG}"
